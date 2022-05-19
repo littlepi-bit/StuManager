@@ -590,7 +590,21 @@ func (controller *Controller) AddUser(c *gin.Context) {
 //删除用户
 func (controller *Controller) DeleteUser(c *gin.Context) {
 	var user Model.User
-	c.Bind(&user)
+	var tmp struct {
+		UserId    string `json:"userId"`
+		DelUserId string `json:"delUserId"`
+	}
+	c.Bind(&tmp)
+	admin := Model.GetUserById(tmp.UserId)
+	if admin.Identity != "administrators" {
+		fmt.Println("权限不足")
+		c.JSON(http.StatusOK, gin.H{
+			"status": "fail",
+			"msg":    "没有管理员权限",
+		})
+		return
+	}
+	user = *Model.GetUserById(tmp.DelUserId)
 	if err := user.DeleteUser(); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "fail",
