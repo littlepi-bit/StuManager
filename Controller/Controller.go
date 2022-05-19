@@ -550,7 +550,32 @@ func (controller *Controller) ExamLeave(c *gin.Context) {
 func (controller *Controller) AddUser(c *gin.Context) {
 	var user Model.User
 	c.Bind(&user)
-	if err := user.AddUser(); err != nil {
+	var err error
+	if user.Identity == "student" {
+		var student = Model.Student{
+			StuID:   user.Id,
+			StuName: user.Name,
+		}
+		err = student.AddStudent()
+	} else if user.Identity == "teacher" {
+		var teacher = Model.Teacher{
+			TeacherID:   user.Id,
+			TeacherName: user.Name,
+		}
+		err = teacher.AddTeacher()
+	} else if user.Identity == "administrators" {
+		var a = Model.Administrator{
+			AdminId:   user.Id,
+			AdminName: user.Name,
+		}
+		err = a.AddAdministrator()
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "fail",
+			"msg":    "用户类别不存在",
+		})
+	}
+	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "fail",
 			"msg":    err.Error(),

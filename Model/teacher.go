@@ -1,6 +1,9 @@
 package Model
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type Teacher struct {
 	TeacherID   string `gorm:"PRIMARY KEY"`
@@ -33,14 +36,15 @@ func GetTeacherByName(TName string) *Teacher {
 	return &t
 }
 
-func (teacher *Teacher) AddTeacher() {
+func (teacher *Teacher) AddTeacher() error {
 	var t Teacher
 	result := GlobalConn.Where(&Teacher{TeacherID: teacher.TeacherID}).First(&t)
 	if result.RowsAffected != 0 {
 		fmt.Println("该教师已存在")
-		return
+		return errors.New("该教师已存在")
 	}
 	GlobalConn.Create(&teacher)
+	return nil
 }
 
 var GlobalTeacher = []Teacher{
