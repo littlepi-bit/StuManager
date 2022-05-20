@@ -52,6 +52,15 @@ func (controller *Controller) ViewAllCourse(c *gin.Context) {
 func (controller *Controller) LoginCheck(c *gin.Context) {
 	u := &Model.User{}
 	c.Bind(&u)
+	if u.Id == "" || u.Password == "" {
+		log.Fatalln("用户名不能为空")
+		c.JSON(http.StatusOK, gin.H{
+			"msg":        "fail",
+			"peopleType": "",
+			"userName":   "",
+		})
+		return
+	}
 	var user Model.User
 	result := Model.GlobalConn.Where(&Model.User{Id: u.Id, Password: u.Password}).Find(&user)
 	fmt.Println(user)
