@@ -292,7 +292,7 @@ func (controller *Controller) Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		method := c.Request.Method
 
-		c.Header("Access-Control-Allow-Origin", "http://120.77.12.35/:3000")
+		c.Header("Access-Control-Allow-Origin", "http://120.77.12.35:3000")
 		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
 		c.Header("Access-Control-Allow-Headers", "*")
 		c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type")
