@@ -557,25 +557,45 @@ func (controller *Controller) ExamLeave(c *gin.Context) {
 
 //添加用户
 func (controller *Controller) AddUser(c *gin.Context) {
-	var user Model.User
+	var user struct {
+		UserId   string `json:"userId"`
+		UserName string `json:"userName"`
+		Identity string `json:"peopleType"`
+		Gender   string `json:"userSex"`
+		Grade    string `json:"userGrade"`
+		College  string `json:"userCollege"`
+		Major    string `json:"userMajor"`
+		Class    string `json:"userClass"`
+		Title    string `json:"userTitle"`
+		Type     string `json:"userType"`
+	}
 	c.Bind(&user)
 	var err error
 	if user.Identity == "student" {
 		var student = Model.Student{
-			StuID:   user.Id,
-			StuName: user.Name,
+			StuID:     user.UserId,
+			StuName:   user.UserName,
+			StuGender: user.Gender,
+			Grade:     user.Gender,
+			College:   user.College,
+			Major:     user.Major,
+			Class:     user.Class,
 		}
 		err = student.AddStudent()
 	} else if user.Identity == "teacher" {
 		var teacher = Model.Teacher{
-			TeacherID:   user.Id,
-			TeacherName: user.Name,
+			TeacherID:   user.UserId,
+			TeacherName: user.UserName,
+			Gender:      user.Gender,
+			Title:       user.Title,
+			College:     user.College,
 		}
 		err = teacher.AddTeacher()
 	} else if user.Identity == "administrators" {
 		var a = Model.Administrator{
-			AdminId:   user.Id,
-			AdminName: user.Name,
+			AdminId:   user.UserId,
+			AdminName: user.UserName,
+			Function:  user.Type,
 		}
 		err = a.AddAdministrator()
 	} else {
