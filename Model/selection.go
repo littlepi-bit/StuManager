@@ -33,3 +33,10 @@ func (s *Selection) RevokeSelection() {
 	GlobalConn.Where(&Selection{StuID: s.StuID, CourseID: s.CourseID}).First(&selection)
 	GlobalConn.Delete(&selection)
 }
+
+//查看某一课程的选课情况
+func GetSelectionsByCourseId(CId string) (selections []Selection) {
+	//selections = make([]Selection, 0)
+	GlobalConn.Model(&Selection{}).Where("course_id=?", CId).Find(&selections)
+	return selections
+}

@@ -48,6 +48,12 @@ func GetAllCourse() (courses []Course) {
 	return courses
 }
 
+func GetCourseCount() int64 {
+	var count int64
+	GlobalConn.Model(&Course{}).Count(&count)
+	return count
+}
+
 func GetCourseById(CId string) *Course {
 	var course Course
 	GlobalConn.Where(&Course{CourseId: CId}).Find(&course)

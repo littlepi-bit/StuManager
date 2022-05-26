@@ -461,13 +461,8 @@ func (controller *Controller) ViewAllUser(c *gin.Context) {
 	var tmp struct {
 		UserId string `json:"userID"`
 	}
-	type viewUser struct {
-		Key       string `json:"key"`
-		UserId    string `json:"userId"`
-		HasSignIn bool   `json:"hasSignIn"`
-		Identity  string `json:"peopleType"`
-	}
-	var res = []viewUser{}
+
+	var res = []Model.ViewUser{}
 	c.Bind(&tmp)
 
 	result := Model.GetUserById(tmp.UserId)
@@ -475,15 +470,54 @@ func (controller *Controller) ViewAllUser(c *gin.Context) {
 		fmt.Println("管理员不存在")
 		c.JSON(http.StatusOK, res)
 	}
-	users := Model.GetAllUser()
-	for _, user := range users {
-		res = append(res, viewUser{
-			Key:       user.Id,
-			UserId:    user.Id,
-			HasSignIn: true,
-			Identity:  user.Identity,
-		})
-	}
+	// users := Model.GetAllUser()
+	// SignInUsers := make(map[string]bool)
+	// for _, user := range users {
+	// 	res = append(res, Model.ViewUser{
+	// 		Key:       user.Id,
+	// 		UserId:    user.Id,
+	// 		HasSignIn: true,
+	// 		Identity:  user.Identity,
+	// 	})
+	// 	SignInUsers[user.Id] = true
+	// }
+	//stus := Model.GetAllStudents()
+	// for _, stu := range stus {
+	// 	if SignInUsers[stu.StuID] {
+	// 		continue
+	// 	}
+	// 	res = append(res, Model.ViewUser{
+	// 		Key:       stu.StuID,
+	// 		UserId:    stu.StuID,
+	// 		HasSignIn: false,
+	// 		Identity:  "student",
+	// 	})
+	// }
+	// ters := Model.GetAllTeachers()
+	// for _, ter := range ters {
+	// 	if SignInUsers[ter.TeacherID] {
+	// 		continue
+	// 	}
+	// 	res = append(res, Model.ViewUser{
+	// 		Key:       ter.TeacherID,
+	// 		UserId:    ter.TeacherID,
+	// 		HasSignIn: false,
+	// 		Identity:  "teacher",
+	// 	})
+	// }
+	// admins := Model.GetAllAdministrators()
+	// for _, admin := range admins {
+	// 	if SignInUsers[admin.AdminId] {
+	// 		continue
+	// 	}
+	// 	res = append(res, Model.ViewUser{
+	// 		Key:       admin.AdminId,
+	// 		UserId:    admin.AdminId,
+	// 		HasSignIn: false,
+	// 		Identity:  "administrators",
+	// 	})
+	// }
+	res = Model.GetAllViewUser()
 	c.JSON(http.StatusOK, res)
 }
 
@@ -503,6 +537,7 @@ func (controller *Controller) AddCourse(c *gin.Context) {
 	var course Model.Course
 	var t *Model.Timetable
 	c.Bind(&t)
+	t.CourseId = strconv.Itoa(int(Model.GetCourseCount() + 1))
 	course.CopyTimetable(*t)
 	teacher := Model.GetTeacherByName(t.Teacher)
 	var tmp Model.Course
@@ -525,6 +560,30 @@ func (controller *Controller) AddCourse(c *gin.Context) {
 	})
 }
 
+//删除课程
+func (controller *Controller) DeleteCourse(c *gin.Context) {
+	var tmp struct {
+		UserId   string `json:"userId"`
+		CourseId string `json:"courseId"`
+	}
+	c.Bind(&tmp)
+	result := Model.GetUserById(tmp.UserId)
+	if result == nil || result.Identity != "administrators" {
+		fmt.Println("管理员不存在")
+		c.JSON(http.StatusOK, gin.H{
+			"status": "fail",
+			"msg":    "管理员不存在",
+		})
+		return
+	}
+	course := Model.GetCourseById(tmp.CourseId)
+	course.DeleteCourse()
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+		"msg":    "删除成功",
+	})
+}
+
 //查看已添加的课程
 func (controller *Controller) ViewInitialCourse(c *gin.Context) {
 	var tmp = []Model.Timetable{}
@@ -537,6 +596,32 @@ func (controller *Controller) ViewInitialCourse(c *gin.Context) {
 		tmp = append(tmp, t)
 	}
 	c.JSON(http.StatusOK, tmp)
+}
+
+//查看某一门课程中所有的学生
+func (controller *Controller) ViewAllStuInACourse(c *gin.Context) {
+	var course Model.Course
+	c.Bind(&course)
+	course = *Model.GetCourseById(course.CourseId)
+	if course.Agreed == "false" {
+		fmt.Println("教师还未同意")
+		c.JSON(http.StatusOK, []Model.Student{})
+		return
+	}
+	type ViewStudent struct {
+		Key string `json:"key"`
+		Model.Student
+	}
+	students := make([]ViewStudent, 0)
+	selections := Model.GetSelectionsByCourseId(course.CourseId)
+	for _, selection := range selections {
+		student := Model.GetStudentByID(selection.StuID)
+		students = append(students, ViewStudent{
+			Key:     student.StuID,
+			Student: *student,
+		})
+	}
+	c.JSON(http.StatusOK, students)
 }
 
 //审核请假单
@@ -647,6 +732,21 @@ func (controller *Controller) DeleteUser(c *gin.Context) {
 		"status": "ok",
 		"msg":    "删除成功",
 	})
+}
+
+//获取所有教师
+func (controller *Controller) GetTeachers(c *gin.Context) {
+	var user Model.User
+	c.Bind(&user)
+	admin := Model.GetAdministratorById(user.Id)
+	if admin == nil {
+		fmt.Println("管理员不存在")
+		c.JSON(http.StatusOK, Model.User{})
+		return
+	}
+	teachers := Model.GetAllTeachers()
+	viewUsers := Model.TeachersToViewUser(teachers)
+	c.JSON(http.StatusOK, viewUsers)
 }
 
 //教师

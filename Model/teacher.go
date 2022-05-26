@@ -47,6 +47,34 @@ func (teacher *Teacher) AddTeacher() error {
 	return nil
 }
 
+func GetAllTeachers() []Teacher {
+	var ters = make([]Teacher, 0)
+	result := GlobalConn.Model(&Teacher{}).Find(&ters)
+	if result.Error != nil || result.RowsAffected == 0 {
+		return nil
+	}
+	return ters
+}
+
+func TeachersToViewUser(teachers []Teacher) []ViewUser {
+	viewUsers := make([]ViewUser, 0)
+	users := GetAllUser()
+	SignInUsers := make(map[string]bool)
+	for _, user := range users {
+		SignInUsers[user.Id] = true
+	}
+	for _, teacher := range teachers {
+		viewUsers = append(viewUsers, ViewUser{
+			Key:       teacher.TeacherID,
+			UserId:    teacher.TeacherID,
+			UserName:  teacher.TeacherName,
+			Identity:  "teacher",
+			HasSignIn: SignInUsers[teacher.TeacherID],
+		})
+	}
+	return viewUsers
+}
+
 var GlobalTeacher = []Teacher{
 	{
 		TeacherID:   "12",

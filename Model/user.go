@@ -17,6 +17,14 @@ type User struct {
 	Answer2   string `json:"answer2"`
 }
 
+type ViewUser struct {
+	Key       string `json:"key"`
+	UserId    string `json:"userId"`
+	UserName  string `json:"userName"`
+	HasSignIn bool   `json:"hasSignIn"`
+	Identity  string `json:"peopleType"`
+}
+
 var GlobalUser *User
 
 func (user *User) AddUser() error {
@@ -55,4 +63,15 @@ func GetAllUser() []User {
 		return nil
 	}
 	return users
+}
+
+func GetAllViewUser() []ViewUser {
+	viewUsers := make([]ViewUser, 0)
+	stus := GetAllStudents()
+	viewUsers = append(viewUsers, StudentsToViewUser(stus)...)
+	ters := GetAllTeachers()
+	viewUsers = append(viewUsers, TeachersToViewUser(ters)...)
+	admins := GetAllAdministrators()
+	viewUsers = append(viewUsers, AdministratorsToViewUser(admins)...)
+	return viewUsers
 }

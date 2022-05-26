@@ -6,13 +6,13 @@ import (
 )
 
 type Student struct {
-	StuID     string `gorm:"primaryKey"`
-	StuName   string `gorm:"NOT NULL"`
-	StuGender string `gorm:"NOT NULL"`
+	StuID     string `gorm:"primaryKey" json:"userId"`
+	StuName   string `gorm:"NOT NULL" json:"userName"`
+	StuGender string `gorm:"NOT NULL" json:"userSex"`
 	Grade     string `gorm:"NOT NULL"`
 	College   string `gorm:"NOT NULL"`
 	Major     string `gorm:"NOT NULL"`
-	Class     string `gorm:"NOT NULL"`
+	Class     string `gorm:"NOT NULL" json:"userClass"`
 }
 
 func NewStudent() *Student {
@@ -26,6 +26,34 @@ func GetStudentByID(SId string) *Student {
 		return nil
 	}
 	return &s
+}
+
+func GetAllStudents() []Student {
+	var stus = make([]Student, 0)
+	result := GlobalConn.Model(&Student{}).Find(&stus)
+	if result.Error != nil || result.RowsAffected == 0 {
+		return nil
+	}
+	return stus
+}
+
+func StudentsToViewUser(students []Student) []ViewUser {
+	viewUsers := make([]ViewUser, 0)
+	users := GetAllUser()
+	SignInUsers := make(map[string]bool)
+	for _, user := range users {
+		SignInUsers[user.Id] = true
+	}
+	for _, student := range students {
+		viewUsers = append(viewUsers, ViewUser{
+			Key:       student.StuID,
+			UserId:    student.StuID,
+			UserName:  student.StuName,
+			Identity:  "student",
+			HasSignIn: SignInUsers[student.StuID],
+		})
+	}
+	return viewUsers
 }
 
 func (student *Student) AddStudent() error {
