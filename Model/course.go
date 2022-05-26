@@ -84,13 +84,14 @@ func (t *Timetable) CopyCourse(course Course) {
 func (course *Course) CopyTimetable(t Timetable) {
 	fmt.Println(t.Teacher)
 	var teacher = GetTeacherByName(t.Teacher)
+	college := GetCollegeByName(t.College)
 	course.CourseId = t.CourseId
 	course.CourseName = t.CourseName
 	course.CourseTime = t.CourseTime
 	course.Address = t.Address
 	course.Capacity, _ = strconv.Atoi(t.MaxCapacity)
 	course.Credit, _ = strconv.Atoi(t.Credit)
-	course.College = t.College
+	course.College = college.CollegeNumber
 	course.Agreed = t.HasAgreed
 	course.TeacherID = teacher.TeacherID
 }
