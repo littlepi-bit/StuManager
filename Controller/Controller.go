@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -301,7 +302,7 @@ func (controller *Controller) Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		method := c.Request.Method
 
-		c.Header("Access-Control-Allow-Origin", "http://120.77.12.35:3000")
+		c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
 		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
 		c.Header("Access-Control-Allow-Headers", "*")
 		c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type")
@@ -535,11 +536,23 @@ func (controller *Controller) ViewStuLeave(c *gin.Context) {
 //添加课程
 func (controller *Controller) AddCourse(c *gin.Context) {
 	var course Model.Course
-	var t *Model.Timetable
-	c.Bind(&t)
-	t.CourseId = strconv.Itoa(int(Model.GetCourseCount() + 1))
-	course.CopyTimetable(*t)
-	teacher := Model.GetTeacherByName(t.Teacher)
+	//var t *Model.Timetable
+	c.Bind(&course)
+	TId := strings.Split(course.TeacherID, "(")
+	course.TeacherID = TId[1][:len(TId[1])-1]
+	course.CourseId = strconv.Itoa(int(Model.GetCourseCount() + 1))
+	r := []rune(course.Address)
+	fmt.Println(r[1])
+	if r[0] == rune('犀') {
+		course.Address = "X" + string(r[2:])
+	} else if r[0] == rune('九') {
+		course.Address = "J" + string(r[2:])
+	} else {
+		course.Address = "E" + string(r[2:])
+	}
+	//course.CopyTimetable(*t)
+	college := Model.GetCollegeByName(course.College)
+	teacher := Model.GetTeacherById(course.TeacherID)
 	var tmp Model.Course
 	result := Model.GlobalConn.Where(&Model.Course{CourseId: course.CourseId}).First(&tmp)
 	if result.Error == nil || result.RowsAffected != 0 {
@@ -550,9 +563,12 @@ func (controller *Controller) AddCourse(c *gin.Context) {
 		})
 		return
 	}
+	course.College = college.CollegeNumber
 	course.Agreed = "pending"
 	course.TeacherID = teacher.TeacherID
 	course.NumberOfStu = 0
+	course.GetCId()
+	fmt.Println(course)
 	course.AddCourse()
 	c.JSON(http.StatusOK, gin.H{
 		"status": "ok",

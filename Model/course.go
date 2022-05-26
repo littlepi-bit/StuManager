@@ -83,7 +83,7 @@ func (t *Timetable) CopyCourse(course Course) {
 
 func (course *Course) CopyTimetable(t Timetable) {
 	fmt.Println(t.Teacher)
-	var teacher = GetTeacherByName(t.Teacher)
+	var teacher = GetTeacherById(t.Teacher)
 	college := GetCollegeByName(t.College)
 	course.CourseId = t.CourseId
 	course.CourseName = t.CourseName
@@ -96,8 +96,11 @@ func (course *Course) CopyTimetable(t Timetable) {
 	course.TeacherID = teacher.TeacherID
 }
 
-func (c *Course) AddCourse() {
+func (c *Course) GetCId() {
 	c.CourseId = c.College + strconv.Itoa(int(crc32.ChecksumIEEE([]byte(c.CourseId))))
+}
+
+func (c *Course) AddCourse() {
 	GlobalConn.Create(c)
 }
 
