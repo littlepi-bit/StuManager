@@ -55,11 +55,11 @@ func JwtVerfiy(c *gin.Context) {
 		return
 	}
 	//验证token，并储存在请求中
-	c.Set("user", parseToken(MyToken))
+	c.Set("user", ParseToken(MyToken))
 }
 
 //解析token
-func parseToken(tokenString string) *JWTClaims {
+func ParseToken(tokenString string) *JWTClaims {
 	//解析token
 	token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return Secret, nil

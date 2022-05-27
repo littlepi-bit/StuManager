@@ -21,15 +21,16 @@ func NewController() *Controller {
 
 //查看所有课程
 func (controller *Controller) ViewAllCourse(c *gin.Context) {
-	var user Model.User
-	// c.Bind(&user)
-	// if ok := Model.IsExist(user.Id); !ok {
-	// 	fmt.Println("用户不存在")
-	// 	c.JSON(http.StatusForbidden, gin.H{
-	// 		"isExist": false,
-	// 	})
-	// 	return
-	// }
+	//c.Bind(&user)
+	MyToken := c.GetHeader("token")
+	user := Model.ParseToken(MyToken)
+	if ok := Model.IsExist(user.UserID); !ok {
+		fmt.Println("用户不存在")
+		c.JSON(http.StatusForbidden, gin.H{
+			"isExist": false,
+		})
+		return
+	}
 	courses := Model.GetAllCourse()
 	var timetable = []Model.Timetable{}
 	for _, course := range courses {
@@ -38,7 +39,7 @@ func (controller *Controller) ViewAllCourse(c *gin.Context) {
 		}
 		var class = Model.Timetable{}
 		class.CopyCourse(course)
-		result := Model.GlobalConn.Where(&Model.Selection{StuID: user.Id, CourseID: course.CourseId}).First(&Model.Selection{})
+		result := Model.GlobalConn.Where("stu_id = ? AND course_id = ?", user.UserID, course.CourseId).First(&Model.Selection{})
 		if result.RowsAffected != 0 {
 			class.HasSelected = true
 		} else {
@@ -100,6 +101,8 @@ func (controller *Controller) ChangePassword(c *gin.Context) {
 func (controller *Controller) SignIn(c *gin.Context) {
 	var myUser Model.User
 	c.Bind(&myUser)
+	myUser.Id = strings.TrimSpace(myUser.Id)
+	myUser.Password = strings.TrimSpace(myUser.Password)
 	fmt.Println(myUser)
 	var user Model.User
 	result := Model.GlobalConn.Where(&Model.User{Id: myUser.Id}).First(&user)
