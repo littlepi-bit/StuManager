@@ -22,14 +22,14 @@ func NewController() *Controller {
 //查看所有课程
 func (controller *Controller) ViewAllCourse(c *gin.Context) {
 	var user Model.User
-	c.Bind(&user)
-	if ok := Model.IsExist(user.Id); !ok {
-		fmt.Println("用户不存在")
-		c.JSON(http.StatusForbidden, gin.H{
-			"isExist": false,
-		})
-		return
-	}
+	// c.Bind(&user)
+	// if ok := Model.IsExist(user.Id); !ok {
+	// 	fmt.Println("用户不存在")
+	// 	c.JSON(http.StatusForbidden, gin.H{
+	// 		"isExist": false,
+	// 	})
+	// 	return
+	// }
 	courses := Model.GetAllCourse()
 	var timetable = []Model.Timetable{}
 	for _, course := range courses {
@@ -54,7 +54,7 @@ func (controller *Controller) LoginCheck(c *gin.Context) {
 	u := &Model.User{}
 	c.Bind(&u)
 	if u.Id == "" || u.Password == "" {
-		log.Fatalln("用户名不能为空")
+		log.Println("用户名不能为空")
 		c.JSON(http.StatusOK, gin.H{
 			"msg":        "fail",
 			"peopleType": "",
@@ -89,6 +89,11 @@ func (controller *Controller) LoginCheck(c *gin.Context) {
 			"userName":   user.Name,
 		})
 	}
+}
+
+//更改密码
+func (controller *Controller) ChangePassword(c *gin.Context) {
+
 }
 
 //注册
