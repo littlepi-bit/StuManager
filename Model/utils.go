@@ -55,7 +55,12 @@ func JwtVerfiy(c *gin.Context) {
 		return
 	}
 	//验证token，并储存在请求中
-	c.Set("user", ParseToken(MyToken))
+	user := ParseToken(MyToken)
+	if !IsExist(user.UserID) {
+		fmt.Println("用户不存在")
+		return
+	}
+	c.Set("user", user)
 }
 
 //解析token
