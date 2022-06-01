@@ -43,8 +43,9 @@ func SetUpRouter() *gin.Engine {
 	router.POST("/viewAllNeedTeach", controller.ViewAllNeedTeach)
 	router.POST("/viewAllReceived", controller.ViewAllReceived)
 	router.POST("/viewAllSended", controller.ViewAllSended)
-	router.POST("/viewAllStuInACourse", controller.ViewAllStuInACourse) //todo
+	router.POST("/viewAllStuInACourse", controller.ViewAllStuInACourse)
 	router.POST("/viewAllTeachCourse", controller.ViewAllTeachCourse)
+	router.POST("/viewAlreadyRegisteredUsers", controller.ViewAlreadyRegisteredUsers)
 	router.POST("/viewInitialCourse", controller.ViewInitialCourse)
 	router.POST("/viewMyLeave", controller.ViewMyLeave)
 	router.POST("/viewSelectedCourse", controller.ViewSelectedCourse)
