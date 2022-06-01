@@ -21,32 +21,18 @@ func NewController() *Controller {
 
 //查看所有课程
 func (controller *Controller) ViewAllCourse(c *gin.Context) {
-	//c.Bind(&user)
+	//获取token验证用户
 	MyToken := c.GetHeader("token")
 	user := Model.ParseToken(MyToken)
 	if ok := Model.IsExist(user.UserID); !ok {
-		fmt.Println("用户不存在")
+		fmt.Println("用户不存在")	
 		c.JSON(http.StatusForbidden, gin.H{
 			"isExist": false,
 		})
 		return
 	}
-	courses := Model.GetAllCourse()
-	var timetable = []Model.Timetable{}
-	for _, course := range courses {
-		if course.Agreed != "true" {
-			continue
-		}
-		var class = Model.Timetable{}
-		class.CopyCourse(course)
-		result := Model.GlobalConn.Where("stu_id = ? AND course_id = ?", user.UserID, course.CourseId).First(&Model.Selection{})
-		if result.RowsAffected != 0 {
-			class.HasSelected = true
-		} else {
-			class.HasSelected = false
-		}
-		timetable = append(timetable, class)
-	}
+	//获取课程表
+	var timetable = Model.GetAllTimetable(user.UserID)
 	c.JSON(http.StatusOK, timetable)
 }
 
@@ -75,11 +61,6 @@ func (controller *Controller) LoginCheck(c *gin.Context) {
 		})
 		return
 	} else {
-		// c.SetCookie("name", "json", -1, "", "", false, true)
-		// c.SetCookie("token", Model.GenerateToken(&Model.JWTClaims{
-		// 	UserID:   user.Id,
-		// 	Username: user.Name,
-		// 	Password: user.Password}), -1, "", "", false, true)
 		c.JSON(http.StatusOK, gin.H{
 			"token": Model.GenerateToken(&Model.JWTClaims{
 				UserID:   user.Id,

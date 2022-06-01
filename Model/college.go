@@ -36,15 +36,19 @@ func GetCollegeByName(name string) *College {
 
 var GlobalCollege = []College{
 	{
-		CollegeNumber: "CSAI",
+		CollegeNumber: "SCAI",
+		CollegeName:   "信息科学与技术学院",
+	},
+	{
+		CollegeNumber: "SIST",
 		CollegeName:   "计算机与人工智能学院",
 	},
 	{
-		CollegeNumber: "CIVIL",
+		CollegeNumber: "CIVE",
 		CollegeName:   "土木工程学院",
 	},
 	{
-		CollegeNumber: "FORE",
+		CollegeNumber: "SoFL",
 		CollegeName:   "外国语学院",
 	},
 	{
@@ -54,6 +58,14 @@ var GlobalCollege = []College{
 	{
 		CollegeNumber: "MATH",
 		CollegeName:   "数学学院",
+	},
+	{
+		CollegeNumber: "PHYS",
+		CollegeName:   "物理科学与技术学院",
+	},
+	{
+		CollegeNumber: "PHYE",
+		CollegeName:   "体育学院",
 	},
 }
 

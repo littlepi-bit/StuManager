@@ -40,3 +40,12 @@ func GetSelectionsByCourseId(CId string) (selections []Selection) {
 	GlobalConn.Model(&Selection{}).Where("course_id=?", CId).Find(&selections)
 	return selections
 }
+
+func GetSelectionsByCourseIdAndStuId(StuId, CorId string) *Selection {
+	var s Selection
+	result := GlobalConn.Where("stu_id = ? AND course_id = ?", StuId, CorId).First(&s)
+	if result.Error != nil || result.RowsAffected == 0 {
+		return nil
+	}
+	return &s
+}

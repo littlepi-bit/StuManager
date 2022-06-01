@@ -11,8 +11,14 @@ import (
 var GlobalConn *gorm.DB
 var GBmu sync.Mutex
 
-func OpenDatabase() {
-	conn, err := gorm.Open("mysql", "root:123456@(120.77.12.35:3306)/stu?charset=utf8&parseTime=True&loc=Local")
+func OpenDatabase(remote bool) {
+	tmp := ""
+	if remote {
+		tmp = "root:123456@(120.77.12.35:3306)/stu?charset=utf8&parseTime=True&loc=Local"
+	} else {
+		tmp = "root:123456@(127.0.0.1:3306)/stu?charset=utf8&parseTime=True&loc=Local"
+	}
+	conn, err := gorm.Open("mysql", tmp)
 	if err != nil {
 		log.Fatal("failed to connect database")
 		return

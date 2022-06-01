@@ -81,19 +81,17 @@ func call(t *testing.T, testcases []TestCase) {
 			fmt.Printf("接口返回: %s\n", w.Body.String())
 		}
 
-		// s := struct {
-		// 	Status string      `json:"status"`
-		// 	Msg    string      `json:"msg"`
-		// 	Data   interface{} `json:"data"`
-		// }{}
-		//assert.Equal(t, v.errMsg, s.Msg)
 		assert.Equal(t, v.code, w.Code)
+		if v.errMsg != "" {
+			assert.Equal(t, v.errMsg, w.Body.String())
+		}
+
 	}
 	tearDown()
 }
 
 func setup() {
-	Model.OpenDatabase()
+	Model.OpenDatabase(false)
 	gin.SetMode(gin.TestMode)
 	fmt.Println("Before All Tests")
 }
@@ -113,58 +111,98 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestViewAllCourseRouter(t *testing.T) {
-	setup()
-	call(t, GlobalTestCases)
-	// router := gin.Default()
-	// router.Use(TestController.Cors())
-	// router.POST("/viewAllCourse", TestController.ViewAllCourse)
-	// w := httptest.NewRecorder()
-	// jsonByte, _ := json.Marshal(gin.H{"userId": "2019110502"})
-	// req, _ := http.NewRequest("POST", "/viewAllCourse", bytes.NewReader(jsonByte))
-	// var user = Model.User{
-	// 	Id:       "2019110502",
-	// 	Password: "12345",
-	// 	Name:     "游城十代",
-	// }
-	// req.Header.Set("token", Model.GenerateToken(&Model.JWTClaims{
-	// 	UserID:   user.Id,
-	// 	Username: user.Name,
-	// 	Password: user.Password}))
-	// router.ServeHTTP(w, req)
+// func TestViewAllCourseRouter(t *testing.T) {
+// 	setup()
+// 	call(t, GlobalTestCases)
+// 	// router := gin.Default()
+// 	// router.Use(TestController.Cors())
+// 	// router.POST("/viewAllCourse", TestController.ViewAllCourse)
+// 	// w := httptest.NewRecorder()
+// 	// jsonByte, _ := json.Marshal(gin.H{"userId": "2019110502"})
+// 	// req, _ := http.NewRequest("POST", "/viewAllCourse", bytes.NewReader(jsonByte))
+// 	// var user = Model.User{
+// 	// 	Id:       "2019110502",
+// 	// 	Password: "12345",
+// 	// 	Name:     "游城十代",
+// 	// }
+// 	// req.Header.Set("token", Model.GenerateToken(&Model.JWTClaims{
+// 	// 	UserID:   user.Id,
+// 	// 	Username: user.Name,
+// 	// 	Password: user.Password}))
+// 	// router.ServeHTTP(w, req)
 
-	// assert.Equal(t, 200, w.Code)
-	// fmt.Println(w.Body.String())
-	tearDown()
-}
+// 	// assert.Equal(t, 200, w.Code)
+// 	// fmt.Println(w.Body.String())
+// 	tearDown()
+// }
 
-func TestViewAllNeedTeach(t *testing.T) {
-	setup()
-	router := gin.Default()
-	router.Use(TestController.Cors())
-	router.POST("/viewAllNeedTeach", TestController.ViewAllNeedTeach)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/viewAllNeedTeach", NewBufferStruct(gin.H{"userId": "12"}))
-	router.ServeHTTP(w, req)
+// func TestViewAllNeedTeach(t *testing.T) {
+// 	setup()
+// 	router := gin.Default()
+// 	router.Use(TestController.Cors())
+// 	router.POST("/viewAllNeedTeach", TestController.ViewAllNeedTeach)
+// 	w := httptest.NewRecorder()
+// 	req, _ := http.NewRequest("POST", "/viewAllNeedTeach", NewBufferStruct(gin.H{"userId": "12"}))
+// 	router.ServeHTTP(w, req)
 
-	assert.Equal(t, 200, w.Code)
-	fmt.Println(w.Body.String())
-	tearDown()
-}
+// 	assert.Equal(t, 200, w.Code)
+// 	fmt.Println(w.Body.String())
+// 	tearDown()
+// }
 
 func TestAllRouter(t *testing.T) {
 	call(t, GlobalTestCases)
 }
 
 var GlobalTestCases = []TestCase{
-	TestCase{
+	{
+		code: 200,
+		param: JsontoString(gin.H{
+			"userId":   "2019110502",
+			"password": "12345",
+		}),
+		method:   "POST",
+		desc:     "测试登录验证(登录成功样例)",
+		handler:  TestController.LoginCheck,
+		showBody: true,
+		errMsg: JsontoString(gin.H{
+			"token": Model.GenerateToken(&Model.JWTClaims{
+				UserID:   "2019110502",
+				Password: "12345",
+				Username: "游城十代"}),
+			"msg":        "ok",
+			"peopleType": "student",
+			"userName":   "游城十代",
+		}),
+		url:         "/loginCheck",
+		contentType: "application/json",
+	},
+	{
+		code: 200,
+		param: JsontoString(gin.H{
+			"userId":   "2019110502",
+			"password": "123456",
+		}),
+		method:   "POST",
+		desc:     "测试登录验证(登录失败样例)",
+		handler:  TestController.LoginCheck,
+		showBody: true,
+		errMsg: JsontoString(gin.H{
+			"msg":        "fail",
+			"peopleType": "",
+			"userName":   "",
+		}),
+		url:         "/loginCheck",
+		contentType: "application/json",
+	},
+	{
 		code:        200,
 		param:       JsontoString(gin.H{"userId": "2019110502"}),
 		method:      "POST",
 		desc:        "测试查看所有课程",
 		handler:     TestController.ViewAllCourse,
 		showBody:    true,
-		errMsg:      "用户不存在",
+		errMsg:      "",
 		url:         "/viewAllCourse",
 		contentType: "application/json",
 	},

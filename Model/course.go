@@ -65,6 +65,26 @@ func GetCourseByName(CName string) (courses []Course) {
 	return courses
 }
 
+func GetAllTimetable(StuId string) []Timetable {
+	courses := GetAllCourse()
+	var timetable = []Timetable{}
+	for _, course := range courses {
+		if course.Agreed != "true" {
+			continue
+		}
+		var class = Timetable{}
+		class.CopyCourse(course)
+		result := GetSelectionsByCourseIdAndStuId(StuId, course.CourseId)
+		if result != nil {
+			class.HasSelected = true
+		} else {
+			class.HasSelected = false
+		}
+		timetable = append(timetable, class)
+	}
+	return timetable
+}
+
 func (t *Timetable) CopyCourse(course Course) {
 	var teacher = Teacher{}
 	GlobalConn.Where(&Teacher{TeacherID: course.TeacherID}).First(&teacher)

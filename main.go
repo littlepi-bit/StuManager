@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	Model.OpenDatabase()
+	Model.OpenDatabase(true)
 	defer Model.CloseDatabase()
 	//Model.InitDatabase()
 	//Model.TestAddCollege()

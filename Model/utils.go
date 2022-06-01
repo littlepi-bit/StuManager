@@ -58,6 +58,7 @@ func JwtVerfiy(c *gin.Context) {
 	user := ParseToken(MyToken)
 	if !IsExist(user.UserID) {
 		fmt.Println("用户不存在")
+		c.String(http.StatusForbidden, "禁止访问")
 		return
 	}
 	c.Set("user", user)
@@ -100,6 +101,9 @@ func Refresh(tokenString string) string {
 }
 
 func IsExist(userId string) bool {
+	if userId == "" {
+		return false
+	}
 	var user = User{}
 	result := GlobalConn.First(&user)
 	return result.RowsAffected != 0
