@@ -36,11 +36,11 @@ func GetCollegeByName(name string) *College {
 
 var GlobalCollege = []College{
 	{
-		CollegeNumber: "SCAI",
+		CollegeNumber: "SIST",
 		CollegeName:   "信息科学与技术学院",
 	},
 	{
-		CollegeNumber: "SIST",
+		CollegeNumber: "SCAI",
 		CollegeName:   "计算机与人工智能学院",
 	},
 	{
@@ -70,6 +70,7 @@ var GlobalCollege = []College{
 }
 
 func TestAddCollege() {
+	GlobalConn.DropTable(&College{})
 	GlobalConn.CreateTable(&College{})
 	for _, c := range GlobalCollege {
 		c.AddCollege()

@@ -121,6 +121,9 @@ func (c *Course) GetCId() {
 }
 
 func (c *Course) AddCourse() {
+	if len(c.CourseId) < 3 {
+		c.GetCId()
+	}
 	GlobalConn.Create(c)
 }
 
@@ -180,7 +183,7 @@ var GlobalCourse []Course = []Course{
 		Credit:     4,
 		Capacity:   80,
 		TeacherID:  "22",
-		College:    "CSAI",
+		College:    "SCAI",
 		Address:    "x2416",
 		Agreed:     "true",
 	},
@@ -191,7 +194,7 @@ var GlobalCourse []Course = []Course{
 		Credit:     5,
 		Capacity:   94,
 		TeacherID:  "32",
-		College:    "CSAI",
+		College:    "SCAI",
 		Address:    "x4151",
 		Agreed:     "true",
 	},
@@ -203,7 +206,7 @@ var GlobalCourse []Course = []Course{
 		Capacity:    80,
 		NumberOfStu: 80,
 		TeacherID:   "12",
-		College:     "CSAI",
+		College:     "SCAI",
 		Address:     "x4154",
 		Agreed:      "true",
 	},
@@ -214,7 +217,7 @@ var GlobalCourse []Course = []Course{
 		Credit:     3,
 		Capacity:   10,
 		TeacherID:  "42",
-		College:    "CSAI",
+		College:    "SCAI",
 		Address:    "x2412",
 		Agreed:     "true",
 	},

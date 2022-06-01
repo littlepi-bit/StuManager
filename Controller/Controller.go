@@ -25,7 +25,7 @@ func (controller *Controller) ViewAllCourse(c *gin.Context) {
 	MyToken := c.GetHeader("token")
 	user := Model.ParseToken(MyToken)
 	if ok := Model.IsExist(user.UserID); !ok {
-		fmt.Println("用户不存在")	
+		fmt.Println("用户不存在")
 		c.JSON(http.StatusForbidden, gin.H{
 			"isExist": false,
 		})
@@ -290,7 +290,7 @@ func (controller *Controller) DeleteSelectedCourse(c *gin.Context) {
 func (controller *Controller) Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		method := c.Request.Method
-
+		//c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
 		c.Header("Access-Control-Allow-Origin", "http://120.77.12.35:3000")
 		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
 		c.Header("Access-Control-Allow-Headers", "*")

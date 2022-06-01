@@ -85,7 +85,6 @@ func call(t *testing.T, testcases []TestCase) {
 		if v.errMsg != "" {
 			assert.Equal(t, v.errMsg, w.Body.String())
 		}
-
 	}
 	tearDown()
 }
