@@ -84,7 +84,7 @@ func (controller *Controller) LoginCheck(c *gin.Context) {
 				"password":   user.Password,
 				"peopleType": user.Identity,
 			}),
-			time.Second*100)
+			time.Minute*5)
 		http.SetCookie(c.Writer, &http.Cookie{
 			Name:     "token", //你的cookie的名字
 			Value:    token,   //cookie值
@@ -181,9 +181,9 @@ func (controller *Controller) ExitLogin(c *gin.Context) {
 		Path:     "/",
 		Domain:   "",
 		MaxAge:   604800,
-		Secure:   true,
+		Secure:   false,
 		HttpOnly: false,
-		SameSite: 4, //下面是详细解释
+		// SameSite: 4, //下面是详细解释
 	})
 	c.JSON(http.StatusOK, gin.H{})
 }
