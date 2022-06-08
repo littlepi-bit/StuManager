@@ -91,7 +91,7 @@ func (controller *Controller) LoginCheck(c *gin.Context) {
 			Path:     "/",
 			Domain:   "",
 			MaxAge:   604800,
-			Secure:   true,
+			Secure:   false,
 			HttpOnly: false,
 			SameSite: 4, //下面是详细解释
 		})
