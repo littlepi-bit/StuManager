@@ -18,7 +18,7 @@ func NewSelection(stu *Student, cor *Course) *Selection {
 		SelectID:   strconv.Itoa(int(crc32.ChecksumIEEE([]byte(cor.CourseId + stu.StuID + time.Now().String())))),
 		StuID:      stu.StuID,
 		CourseID:   cor.CourseId,
-		SelectTime: time.Now().Format("2006-01-02 15:04:05"),
+		SelectTime: GetSystemTime(),
 	}
 }
 

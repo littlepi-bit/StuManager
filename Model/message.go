@@ -41,7 +41,7 @@ type RecvMsg struct {
 func NewMessage(u1Id, u2Id string) *Message {
 	return &Message{
 		MegID:      strconv.Itoa(int(crc32.ChecksumIEEE([]byte(u1Id + u2Id + time.Now().String())))),
-		SendTime:   time.Now().Format("2006-01-02 15:04:05"),
+		SendTime:   GetSystemTime(),
 		NotifiedID: u1Id,
 		NotifierID: u2Id,
 	}

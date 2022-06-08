@@ -123,3 +123,7 @@ func JsontoString(h gin.H) string {
 	jsonByte, _ := json.Marshal(h)
 	return string(jsonByte)
 }
+
+func GetSystemTime() string {
+	return time.Now().Add(time.Hour * 8).Format("2006-01-02 15:04:05")
+}
