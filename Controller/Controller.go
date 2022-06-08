@@ -93,7 +93,7 @@ func (controller *Controller) LoginCheck(c *gin.Context) {
 			MaxAge:   604800,
 			Secure:   false,
 			HttpOnly: false,
-			SameSite: 4, //下面是详细解释
+			// SameSite: 4, //下面是详细解释
 		})
 		c.JSON(http.StatusOK, gin.H{
 			"token":      token,
