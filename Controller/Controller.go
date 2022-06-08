@@ -109,7 +109,10 @@ func (controller *Controller) AutoLogin(c *gin.Context) {
 	cookie, err := c.Cookie("token")
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusOK, gin.H{})
+		c.JSON(http.StatusOK, gin.H{
+			"flag":       false,
+			"peopleType": "",
+		})
 		return
 	}
 	if cookie == "" {
