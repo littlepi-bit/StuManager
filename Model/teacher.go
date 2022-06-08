@@ -43,6 +43,13 @@ func (teacher *Teacher) AddTeacher() error {
 		fmt.Println("该教师已存在")
 		return errors.New("该教师已存在")
 	}
+	if teacher.Gender != "男" && teacher.Gender != "女" {
+		return errors.New("性别不存在")
+	} else if !GlobalTitle[teacher.Title] {
+		return errors.New("职称不存在")
+	} else if GetCollegeByName(teacher.College) == nil {
+		return errors.New("学院不存在")
+	}
 	GlobalConn.Create(&teacher)
 	return nil
 }
@@ -126,4 +133,10 @@ func TestAddTeacher() {
 	for _, t := range GlobalTeacher {
 		t.AddTeacher()
 	}
+}
+
+var GlobalTitle = map[string]bool{
+	"讲师":  true,
+	"副教授": true,
+	"教授":  true,
 }

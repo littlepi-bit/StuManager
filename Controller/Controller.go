@@ -2,6 +2,7 @@ package Controller
 
 import (
 	"StuManager/Model"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -22,50 +23,80 @@ func NewController() *Controller {
 //查看所有课程
 func (controller *Controller) ViewAllCourse(c *gin.Context) {
 	//获取token验证用户
-	MyToken := c.GetHeader("token")
-	user := Model.ParseToken(MyToken)
-	if ok := Model.IsExist(user.UserID); !ok {
+	// MyToken := c.GetHeader("token")
+	// if MyToken == "" {
+	// 	fmt.Println("不合法访问")
+	// 	c.JSON(http.StatusForbidden, gin.H{
+	// 		"isExist": false,
+	// 	})
+	// 	return
+	// }
+	//user := Model.ParseToken(MyToken)
+	var user Model.User
+	c.Bind(&user)
+	if ok := Model.IsExist(user.Id); !ok {
 		fmt.Println("用户不存在")
-		c.JSON(http.StatusForbidden, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"isExist": false,
 		})
 		return
 	}
 	//获取课程表
-	var timetable = Model.GetAllTimetable(user.UserID)
+	var timetable = Model.GetAllTimetable(user.Id)
 	c.JSON(http.StatusOK, timetable)
 }
 
 //登录验证
 func (controller *Controller) LoginCheck(c *gin.Context) {
-	u := &Model.User{}
-	c.Bind(&u)
-	if u.Id == "" || u.Password == "" {
+	user := &Model.User{}
+	c.Bind(&user)
+	if user.Id == "" {
 		log.Println("用户名不能为空")
 		c.JSON(http.StatusOK, gin.H{
-			"msg":        "fail",
-			"peopleType": "",
-			"userName":   "",
+			"msg": "fail",
+		})
+		return
+	} else if user.Password == "" {
+		log.Println("密码不能为空")
+		c.JSON(http.StatusOK, gin.H{
+			"msg": "fail",
 		})
 		return
 	}
-	var user Model.User
-	result := Model.GlobalConn.Where(&Model.User{Id: u.Id, Password: u.Password}).Find(&user)
+	result := user.CheckUser()
 	fmt.Println(user)
-	if result.Error != nil || result.RowsAffected == 0 {
+	if !result {
 		log.Println("密码或用户名错误！")
 		c.JSON(http.StatusOK, gin.H{
-			"msg":        "fail",
-			"peopleType": "",
-			"userName":   "",
+			"msg": "fail",
 		})
 		return
 	} else {
+		token := Model.GenerateToken(&Model.JWTClaims{
+			UserID:   user.Id,
+			Username: user.Name,
+			Password: user.Password})
+		Model.SetHash(
+			token,
+			Model.JsontoString(gin.H{
+				"userId":     user.Id,
+				"userName":   user.Name,
+				"password":   user.Password,
+				"peopleType": user.Identity,
+			}),
+			time.Second*100)
+		http.SetCookie(c.Writer, &http.Cookie{
+			Name:     "token", //你的cookie的名字
+			Value:    token,   //cookie值
+			Path:     "/",
+			Domain:   "",
+			MaxAge:   604800,
+			Secure:   true,
+			HttpOnly: false,
+			SameSite: 4, //下面是详细解释
+		})
 		c.JSON(http.StatusOK, gin.H{
-			"token": Model.GenerateToken(&Model.JWTClaims{
-				UserID:   user.Id,
-				Username: user.Name,
-				Password: user.Password}),
+			"token":      token,
 			"msg":        "ok",
 			"peopleType": user.Identity,
 			"userName":   user.Name,
@@ -73,8 +104,149 @@ func (controller *Controller) LoginCheck(c *gin.Context) {
 	}
 }
 
+//单点登录
+func (controller *Controller) AutoLogin(c *gin.Context) {
+	cookie, err := c.Cookie("token")
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusOK, gin.H{})
+		return
+	}
+	if cookie == "" {
+		log.Println("重新登录")
+		c.JSON(http.StatusOK, gin.H{
+			"flag":       false,
+			"peopleType": "",
+		})
+		return
+	}
+	userString, err := Model.GetHash(cookie)
+	if err == Model.RedisErr {
+		log.Println("用户未登录")
+		c.JSON(http.StatusOK, gin.H{
+			"flag":       false,
+			"peopleType": "",
+		})
+		return
+	}
+	var userVerify Model.User
+	json.Unmarshal([]byte(userString), &userVerify)
+	fmt.Println(userVerify)
+	//user := Model.ParseToken(cookie)
+	res := userVerify.CheckUser()
+	if !res {
+		log.Println("用户不存在")
+		c.JSON(http.StatusOK, gin.H{
+			"flag":       false,
+			"peopleType": "",
+		})
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"flag":       true,
+			"peopleType": userVerify.Identity,
+			"userId":     userVerify.Id,
+			"password":   userVerify.Password,
+			"userName":   userVerify.Name,
+			"token":      "",
+		})
+	}
+	// user := userVerify
+	// var tmp = Model.GetUserById(user.Id)
+	// if tmp == nil {
+	// 	log.Println("用户不存在")
+	// 	c.JSON(http.StatusOK, gin.H{
+	// 		"flag":       false,
+	// 		"peopleType": "",
+	// 	})
+	// 	return
+	// }
+	// c.JSON(http.StatusOK, gin.H{
+	// 	"flag":       true,
+	// 	"peopleType": tmp.Identity,
+	// 	"userId":     tmp.Id,
+	// 	"password":   tmp.Password,
+	// 	"userName":   tmp.Name,
+	// 	"token":      "",
+	// })
+}
+
+func (controller *Controller) ExitLogin(c *gin.Context) {
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "token", //你的cookie的名字
+		Value:    "",      //cookie值
+		Path:     "/",
+		Domain:   "",
+		MaxAge:   604800,
+		Secure:   true,
+		HttpOnly: false,
+		SameSite: 4, //下面是详细解释
+	})
+	c.JSON(http.StatusOK, gin.H{})
+}
+
 //更改密码
 func (controller *Controller) ChangePassword(c *gin.Context) {
+	var changerUser struct {
+		UserId      string `json:"userId"`
+		Question1   string `json:"question1"`
+		Answer1     string `json:"answer1"`
+		Question2   string `json:"question2"`
+		Answer2     string `json:"answer2"`
+		NewPassword string `json:"newPassword"`
+	}
+	c.Bind(&changerUser)
+	user := Model.GetUserById(changerUser.UserId)
+	if user == nil {
+		log.Println("用户不存在")
+		c.JSON(http.StatusOK, gin.H{
+			"status": "fail",
+			"msg":    "用户不存在",
+		})
+		return
+	}
+	if changerUser.Question1 == user.Question1 && changerUser.Answer1 == user.Answer1 &&
+		changerUser.Question2 == user.Question2 && changerUser.Answer2 == user.Answer2 {
+		user.ChangePassword(changerUser.NewPassword)
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
+			"msg":    "更改密码成功",
+		})
+	} else if changerUser.Question2 == user.Question1 && changerUser.Answer2 == user.Answer1 &&
+		changerUser.Question1 == user.Question2 && changerUser.Answer1 == user.Answer2 {
+		user.ChangePassword(changerUser.NewPassword)
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
+			"msg":    "更改密码成功",
+		})
+	} else {
+		log.Println("验证失败")
+		c.JSON(http.StatusOK, gin.H{
+			"status": "fail",
+			"msg":    "验证失败",
+		})
+	}
+}
+
+//获取问题
+func (controller *Controller) GetQuestion(c *gin.Context) {
+	var user Model.User
+	c.Bind(&user)
+	var tmp = Model.GetUserById(user.Id)
+	if tmp == nil {
+		log.Println("用户不存在")
+		c.JSON(http.StatusOK, gin.H{
+			"status": "fail",
+			"msg":    "用户不存在！请注册",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status":    "ok",
+		"msg":       "用户信息获取成功",
+		"question1": tmp.Question1,
+		"question2": tmp.Question2,
+	})
 
 }
 
@@ -290,10 +462,11 @@ func (controller *Controller) DeleteSelectedCourse(c *gin.Context) {
 func (controller *Controller) Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		method := c.Request.Method
+		c.Header("Access-Control-Allow-Origin", c.GetHeader("Origin"))
 		//c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-		c.Header("Access-Control-Allow-Origin", "http://120.77.12.35:3000")
+		//c.Header("Access-Control-Allow-Origin", "http://120.77.12.35:3000")
 		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
-		c.Header("Access-Control-Allow-Headers", "*")
+		c.Header("Access-Control-Allow-Headers", "Content-Type,Token,Id")
 		c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type")
 		c.Header("Access-Control-Allow-Credentials", "true")
 
@@ -351,6 +524,7 @@ func (controller *Controller) ViewMyLeave(c *gin.Context) {
 func (controller *Controller) SendMessages(c *gin.Context) {
 	var message Model.Message
 	c.Bind(&message)
+	message.NotifiedID = message.NotifiedID[strings.Index(message.NotifiedID, "(")+1 : strings.Index(message.NotifiedID, ")")]
 	u1, u2 := Model.GetUserById(message.NotifierID), Model.GetUserById(message.NotifiedID)
 	if u1 == nil {
 		fmt.Println("未知用户！")
@@ -513,8 +687,24 @@ func (controller *Controller) ViewAllUser(c *gin.Context) {
 
 //查看学生请假单
 func (controller *Controller) ViewStuLeave(c *gin.Context) {
+	var user = Model.User{}
+	c.Bind(&user)
+	user = *Model.GetUserById(user.Id)
 	leaves := Model.GetAllLeave()
 	viewLeaves := []Model.ViewLeave{}
+	if user.Identity == "teacher" {
+		t := Model.GetTeacherById(user.Id)
+		for _, leave := range leaves {
+			viewLeave := *leave.GetViewLeave()
+			if viewLeave.TeacherName != t.TeacherName {
+				continue
+			}
+			fmt.Println(viewLeave.TeacherName)
+			viewLeaves = append(viewLeaves, viewLeave)
+		}
+		c.JSON(http.StatusOK, viewLeaves)
+		return
+	}
 	for _, leave := range leaves {
 		fmt.Println(leave)
 		viewLeaves = append(viewLeaves, *leave.GetViewLeave())
@@ -812,7 +1002,7 @@ func (controller *Controller) ViewStuLeaveByTeacher(c *gin.Context) {
 		if viewLeave.TeacherName != t.TeacherName {
 			continue
 		}
-		fmt.Println(viewLeave)
+		fmt.Println(viewLeave.TeacherName)
 		viewLeaves = append(viewLeaves, viewLeave)
 	}
 	c.JSON(http.StatusOK, viewLeaves)

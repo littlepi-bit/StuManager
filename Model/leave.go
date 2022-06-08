@@ -90,6 +90,7 @@ func (leave *LeaveList) GetViewLeave() *ViewLeave {
 	college := GetCollegeByNum(course.College)
 	timetable := Timetable{}
 	timetable.CopyCourse(*course)
+	//fmt.Println(timetable.Teacher)
 	user := GetUserById(leave.ApplicantID)
 	view := ViewLeave{
 		Key:                  leave.LeaveID,

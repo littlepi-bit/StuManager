@@ -31,6 +31,7 @@ func GetCollegeByName(name string) *College {
 	if result.Error != nil || result.RowsAffected == 0 {
 		return nil
 	}
+
 	return &c
 }
 

@@ -1,6 +1,7 @@
 package Model
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -105,7 +106,7 @@ func IsExist(userId string) bool {
 		return false
 	}
 	var user = User{}
-	result := GlobalConn.First(&user)
+	result := GlobalConn.Where(&User{Id: userId}).First(&user)
 	return result.RowsAffected != 0
 }
 
@@ -116,4 +117,9 @@ func isContain(strArr []string, s string) bool {
 		}
 	}
 	return false
+}
+
+func JsontoString(h gin.H) string {
+	jsonByte, _ := json.Marshal(h)
+	return string(jsonByte)
 }

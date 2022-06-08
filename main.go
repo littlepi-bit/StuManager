@@ -7,8 +7,9 @@ import (
 )
 
 func main() {
-	Model.OpenDatabase(true)
+	Model.OpenDatabase(false)
 	defer Model.CloseDatabase()
+	Model.InitRedis("127.0.0.1:6379")
 	// Model.TestAddCollege()
 	// Model.TestAddCourse()
 	//Model.InitDatabase()
@@ -21,6 +22,5 @@ func main() {
 	//Model.GlobalConn.Create(&Model.Administrator{AdminId: "001", AdminName: "王一博"})
 	router := SetUpRouter()
 	router.Run(":8000")
-	// InitRedis("127.0.0.1:6379")
 	// testRedis()
 }

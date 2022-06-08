@@ -37,6 +37,17 @@ func (user *User) AddUser() error {
 	return nil
 }
 
+func (user *User) CheckUser() bool {
+	if user.Id == "" || user.Password == "" {
+		return false
+	}
+	result := GlobalConn.Where(&User{Id: user.Id, Password: user.Password}).Find(&user)
+	if result.Error != nil || result.RowsAffected == 0 {
+		return false
+	}
+	return true
+}
+
 func (user *User) DeleteUser() error {
 	result := GlobalConn.Where(&User{Id: user.Id}).Find(&user)
 	if result.Error != nil || result.RowsAffected == 0 {
@@ -45,6 +56,11 @@ func (user *User) DeleteUser() error {
 	}
 	GlobalConn.Model(&User{}).Where(&User{Id: user.Id}).Delete(&user)
 	return nil
+}
+
+func (user *User) ChangePassword(newPassword string) error {
+	result := GlobalConn.Model(&User{}).Where(&User{Id: user.Id}).Update("password", newPassword)
+	return result.Error
 }
 
 func GetUserById(UId string) *User {

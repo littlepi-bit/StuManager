@@ -1,8 +1,9 @@
-package main
+package Model
 
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -17,6 +18,8 @@ func InitRedis(url string) (err error) {
 
 	return
 }
+
+var RedisErr = redis.Nil
 
 func testRedis() {
 	_, err := client.Get(context.Background(), "zngw").Result()
@@ -39,4 +42,14 @@ func testRedis() {
 	}
 	fmt.Println("读取 zngw :", val2)
 
+}
+
+func SetHash(key, value string, expiration time.Duration) error {
+	err := client.Set(context.Background(), key, value, expiration).Err()
+	return err
+}
+
+func GetHash(key string) (string, error) {
+	value, err := client.Get(context.Background(), key).Result()
+	return value, err
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"StuManager/Controller"
-	"StuManager/Model"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +11,7 @@ func SetUpRouter() *gin.Engine {
 	router := gin.Default()
 	controller := Controller.NewController()
 	router.Use(controller.Cors())
-	router.Use(Model.JwtVerfiy)
+	//router.Use(Model.JwtVerfiy)
 
 	router.POST("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, []struct{}{})
@@ -25,14 +24,14 @@ func SetUpRouter() *gin.Engine {
 	})
 	router.POST("/addCourse", controller.AddCourse)
 	router.POST("/addUser", controller.AddUser)
-	router.POST("/changePassword") //todo
+	router.POST("/changePassword", controller.ChangePassword)
 	router.POST("/commitLeave", controller.CommitLeave)
 	router.POST("/deleteCourse", controller.DeleteCourse)
 	router.POST("/deleteSelectedCourse", controller.DeleteSelectedCourse)
 	router.POST("/delUser", controller.DeleteUser)
 	router.POST("/examLeave", controller.ExamLeave)
 	router.POST("/examLeaveByTeacher", controller.ExamLeaveByTeacher)
-	router.POST("/getQuestion") //todo
+	router.POST("/getQuestion", controller.GetQuestion)
 	router.POST("/getTeachers", controller.GetTeachers)
 	router.POST("/loginCheck", controller.LoginCheck)
 	router.POST("/readMessage", controller.ReadMessage)
@@ -53,5 +52,7 @@ func SetUpRouter() *gin.Engine {
 	router.POST("/viewStuLeaveByTeacher", controller.ViewStuLeaveByTeacher)
 	router.POST("/viewUser", controller.ViewAllUser)
 	router.POST("/whetherTeaching", controller.WhetherTeaching)
+	router.POST("/autoLogin", controller.AutoLogin)
+	router.POST("/exitLogin", controller.ExitLogin)
 	return router
 }

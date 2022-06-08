@@ -31,9 +31,8 @@ type TestCase struct {
 	showBody    bool            //是否展示返回
 	errMsg      string          //错误信息
 	url         string          //链接
+	header      gin.H           //头部信息
 	contentType string
-	exit1       interface{}
-	exit2       interface{}
 }
 
 func NewBufferStruct(h gin.H) io.Reader {
@@ -50,7 +49,7 @@ func NewBufferString(body string) io.Reader {
 	return bytes.NewBufferString(body)
 }
 
-func PerformRequest(method, url, contentType string, body string, handler gin.HandlerFunc) (c *gin.Context, r *http.Request, w *httptest.ResponseRecorder) {
+func PerformRequest(method, url, contentType string, body string, handler gin.HandlerFunc, header gin.H) (c *gin.Context, r *http.Request, w *httptest.ResponseRecorder) {
 	router := gin.Default()
 	router.Use(TestController.Cors())
 	router.Handle(method, url, handler)
@@ -59,29 +58,26 @@ func PerformRequest(method, url, contentType string, body string, handler gin.Ha
 	r = httptest.NewRequest(method, url, NewBufferString(body))
 	c.Request = r
 	c.Request.Header.Set("Content-Type", contentType)
-	var user = Model.User{
-		Id:       "2019110502",
-		Password: "12345",
-		Name:     "游城十代",
+	for k, v := range header {
+		r.Header.Set(k, v.(string))
 	}
-	r.Header.Set("token", Model.GenerateToken(&Model.JWTClaims{
-		UserID:   user.Id,
-		Username: user.Name,
-		Password: user.Password}))
 	router.ServeHTTP(w, r)
 	return
 }
 
 func call(t *testing.T, testcases []TestCase) {
+	//测试准备
 	setup()
 	for k, v := range testcases {
-		_, _, w := PerformRequest(v.method, v.url, v.contentType, v.param, v.handler)
 		fmt.Printf("第%d个测试用例：%s\n", k+1, v.desc)
+		//执行测试函数，获取响应报文
+		_, _, w := PerformRequest(v.method, v.url, v.contentType, v.param, v.handler, v.header)
 		if v.showBody {
 			fmt.Printf("接口返回: %s\n", w.Body.String())
 		}
-
+		//判断状态码是否符合预期
 		assert.Equal(t, v.code, w.Code)
+		//判断错误信息是否符合预期
 		if v.errMsg != "" {
 			assert.Equal(t, v.errMsg, w.Body.String())
 		}
@@ -103,10 +99,10 @@ func tearDown() {
 var TestController = Controller.NewController()
 
 func TestMain(m *testing.M) {
-	setup()
+	//setup()
 	fmt.Println("Test begins...")
 	code := m.Run()
-	tearDown()
+	//tearDown()
 	os.Exit(code)
 }
 
@@ -150,53 +146,13 @@ func TestMain(m *testing.M) {
 // }
 
 func TestAllRouter(t *testing.T) {
-	call(t, GlobalTestCases)
+	//call(t, GlobalTestCases)
+	call(t, TestCase2)
 }
 
 var GlobalTestCases = []TestCase{
 	{
-		code: 200,
-		param: JsontoString(gin.H{
-			"userId":   "2019110502",
-			"password": "12345",
-		}),
-		method:   "POST",
-		desc:     "测试登录验证(登录成功样例)",
-		handler:  TestController.LoginCheck,
-		showBody: true,
-		errMsg: JsontoString(gin.H{
-			"token": Model.GenerateToken(&Model.JWTClaims{
-				UserID:   "2019110502",
-				Password: "12345",
-				Username: "游城十代"}),
-			"msg":        "ok",
-			"peopleType": "student",
-			"userName":   "游城十代",
-		}),
-		url:         "/loginCheck",
-		contentType: "application/json",
-	},
-	{
-		code: 200,
-		param: JsontoString(gin.H{
-			"userId":   "2019110502",
-			"password": "123456",
-		}),
-		method:   "POST",
-		desc:     "测试登录验证(登录失败样例)",
-		handler:  TestController.LoginCheck,
-		showBody: true,
-		errMsg: JsontoString(gin.H{
-			"msg":        "fail",
-			"peopleType": "",
-			"userName":   "",
-		}),
-		url:         "/loginCheck",
-		contentType: "application/json",
-	},
-	{
-		code:        200,
-		param:       JsontoString(gin.H{"userId": "2019110502"}),
+		code:        http.StatusOK,
 		method:      "POST",
 		desc:        "测试查看所有课程",
 		handler:     TestController.ViewAllCourse,
@@ -204,16 +160,173 @@ var GlobalTestCases = []TestCase{
 		errMsg:      "",
 		url:         "/viewAllCourse",
 		contentType: "application/json",
+		header: gin.H{"token": Model.GenerateToken(&Model.JWTClaims{
+			UserID:   "2019110502",
+			Username: "游城十代",
+			Password: "12345"})},
 	},
 	{
-		code:        200,
-		param:       JsontoString(gin.H{"userId": "12"}),
+		code:        http.StatusForbidden,
 		method:      "POST",
-		desc:        "测试查看教师所有需要教的课程",
-		handler:     TestController.ViewAllNeedTeach,
+		desc:        "测试查看所有课程（token不存在）",
+		handler:     TestController.ViewAllCourse,
+		showBody:    false,
+		errMsg:      JsontoString(gin.H{"isExist": false}),
+		url:         "/viewAllCourse",
+		contentType: "application/json",
+		header:      gin.H{"token": ""},
+	},
+	{
+		code:        http.StatusNotFound,
+		method:      "POST",
+		desc:        "测试查看所有课程（用户不存在）",
+		handler:     TestController.ViewAllCourse,
+		showBody:    false,
+		errMsg:      JsontoString(gin.H{"isExist": false}),
+		url:         "/viewAllCourse",
+		contentType: "application/json",
+		header: gin.H{"token": Model.GenerateToken(&Model.JWTClaims{
+			UserID:   "222221",
+			Username: "游城十代",
+			Password: "12345"})},
+	},
+	// {
+	// 	code:        200,
+	// 	param:       JsontoString(gin.H{"userId": "12"}),
+	// 	method:      "POST",
+	// 	desc:        "测试查看教师所有需要教的课程",
+	// 	handler:     TestController.ViewAllNeedTeach,
+	// 	showBody:    true,
+	// 	errMsg:      "",
+	// 	url:         "/viewAllNeedTeach",
+	// 	contentType: "application/json",
+	// 	header: gin.H{"token": Model.GenerateToken(&Model.JWTClaims{
+	// 		UserID:   "12",
+	// 		Username: "赵宏宇",
+	// 		Password: "12345"})},
+	// },
+	// {
+	// 	code: 200,
+	// 	param: JsontoString(gin.H{
+	// 		"userId":   "2019110502",
+	// 		"password": "12345",
+	// 	}),
+	// 	method:   "POST",
+	// 	desc:     "测试登录验证(登录成功样例)",
+	// 	handler:  TestController.LoginCheck,
+	// 	showBody: true,
+	// 	errMsg: JsontoString(gin.H{
+	// 		"token": Model.GenerateToken(&Model.JWTClaims{
+	// 			UserID:   "2019110502",
+	// 			Password: "12345",
+	// 			Username: "游城十代"}),
+	// 		"msg":        "ok",
+	// 		"peopleType": "student",
+	// 		"userName":   "游城十代",
+	// 	}),
+	// 	url:         "/loginCheck",
+	// 	contentType: "application/json",
+	// },
+	// {
+	// 	code: 200,
+	// 	param: JsontoString(gin.H{
+	// 		"userId":   "2019110502",
+	// 		"password": "123456",
+	// 	}),
+	// 	method:   "POST",
+	// 	desc:     "测试登录验证(登录失败样例)",
+	// 	handler:  TestController.LoginCheck,
+	// 	showBody: true,
+	// 	errMsg: JsontoString(gin.H{
+	// 		"msg":        "fail",
+	// 		"peopleType": "",
+	// 		"userName":   "",
+	// 	}),
+	// 	url:         "/loginCheck",
+	// 	contentType: "application/json",
+	// },
+}
+
+var TestCase2 = []TestCase{
+	{
+		code: 200,
+		param: JsontoString(gin.H{
+			"userId":      "37",
+			"userName":    "张三",
+			"peopleType":  "teacher",
+			"userSex":     "男",
+			"userTitle":   "讲师",
+			"userCollege": "计算机与人工智能学院",
+		}),
+		method:      "POST",
+		desc:        "测试添加教师",
+		handler:     TestController.AddUser,
 		showBody:    true,
 		errMsg:      "",
-		url:         "/viewAllNeedTeach",
+		url:         "/addUser",
+		contentType: "application/json",
+	},
+	{
+		code: 200,
+		param: JsontoString(gin.H{
+			"userId":      "44",
+			"userName":    "张三",
+			"peopleType":  "teacher",
+			"userSex":     "楠",
+			"userTitle":   "讲师",
+			"userCollege": "计算机与人工智能学院",
+		}),
+		method:   "POST",
+		desc:     "测试添加教师（性别不存在）",
+		handler:  TestController.AddUser,
+		showBody: true,
+		errMsg: JsontoString(gin.H{
+			"status": "fail",
+			"msg":    "性别不存在",
+		}),
+		url:         "/addUser",
+		contentType: "application/json",
+	},
+	{
+		code: 200,
+		param: JsontoString(gin.H{
+			"userId":      "56",
+			"userName":    "李四",
+			"peopleType":  "teacher",
+			"userSex":     "女",
+			"userTitle":   "研究生",
+			"userCollege": "土木工程学院",
+		}),
+		method:   "POST",
+		desc:     "测试添加教师（职称不存在）",
+		handler:  TestController.AddUser,
+		showBody: true,
+		errMsg: JsontoString(gin.H{
+			"status": "fail",
+			"msg":    "职称不存在",
+		}),
+		url:         "/addUser",
+		contentType: "application/json",
+	},
+	{
+		code: 200,
+		param: JsontoString(gin.H{
+			"userId":      "28",
+			"userName":    "王五",
+			"peopleType":  "teacher",
+			"userSex":     "男",
+			"userTitle":   "副教授",
+			"userCollege": "挖掘机学院",
+		}),
+		method:   "POST",
+		desc:     "测试添加教师（学院不存在）",
+		handler:  TestController.AddUser,
+		showBody: true,
+		errMsg: JsontoString(gin.H{
+			"status": "fail",
+			"msg":    "学院不存在",
+		}),
+		url:         "/addUser",
 		contentType: "application/json",
 	},
 }
