@@ -1,7 +1,6 @@
 package Model
 
 import (
-	"fmt"
 	"hash/crc32"
 	"strconv"
 	"time"
@@ -74,8 +73,7 @@ func (m *Message) CopySended() SendedMsg {
 	Sended.Key = m.MegID
 	Sended.SendMessage = m.Content
 	Sended.Title = m.Title
-	user := GetUserById(m.NotifiedID)
-	Sended.ToId = fmt.Sprintf("%s(%s)", user.Name, user.Id)
+	Sended.ToId = m.NotifiedID
 	Sended.SendTime = m.SendTime
 	return Sended
 }
@@ -87,8 +85,7 @@ func (m *Message) CopyRecv() RecvMsg {
 	Recv.Title = m.Title
 	Recv.SendMessage = m.Content
 	Recv.SendTime = m.SendTime
-	user := GetUserById(m.NotifierID)
-	Recv.FromId = fmt.Sprintf("%s(%s)", user.Name, user.Id)
+	Recv.FromId = m.NotifierID
 	Recv.HasRead = m.Read
 	return Recv
 }

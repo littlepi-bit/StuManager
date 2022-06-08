@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	Model.OpenDatabase(true)
+	Model.OpenDatabase(false)
 	defer Model.CloseDatabase()
 	Model.InitRedis("120.77.12.35:6379")
 	// Model.TestAddCollege()
