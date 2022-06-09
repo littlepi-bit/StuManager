@@ -527,7 +527,7 @@ func (controller *Controller) ViewMyLeave(c *gin.Context) {
 func (controller *Controller) SendMessages(c *gin.Context) {
 	var message Model.Message
 	c.Bind(&message)
-	message.NotifiedID = message.NotifiedID[strings.Index(message.NotifiedID, "(")+1 : strings.Index(message.NotifiedID, ")")]
+	//message.NotifiedID = message.NotifiedID[strings.Index(message.NotifiedID, "(")+1 : strings.Index(message.NotifiedID, ")")]
 	u1, u2 := Model.GetUserById(message.NotifierID), Model.GetUserById(message.NotifiedID)
 	if u1 == nil {
 		fmt.Println("未知用户！")
@@ -547,7 +547,7 @@ func (controller *Controller) SendMessages(c *gin.Context) {
 	}
 	tmp := Model.NewMessage(u1.Id, u2.Id)
 	message.MegID = tmp.MegID
-	message.SendTime = time.Now().Format("2006-01-02 15:04:05")
+	message.SendTime = Model.GetSystemTime()
 	message.AddMessage()
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "ok",
