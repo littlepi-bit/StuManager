@@ -63,6 +63,27 @@ func (user *User) ChangePassword(newPassword string) error {
 	return result.Error
 }
 
+func (user *User) IsTeacher() bool {
+	if user.Identity == "teacher" {
+		return true
+	}
+	return false
+}
+
+func (user *User) IsStudent() bool {
+	if user.Identity == "student" {
+		return true
+	}
+	return false
+}
+
+func (user *User) IsAdministrators() bool {
+	if user.Identity == "administrators" {
+		return true
+	}
+	return false
+}
+
 func GetUserById(UId string) *User {
 	var user User
 	result := GlobalConn.Where(&User{Id: UId}).First(&user)

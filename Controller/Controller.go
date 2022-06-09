@@ -830,8 +830,19 @@ func (controller *Controller) ExamLeave(c *gin.Context) {
 		Result  string `json:"out"`
 	}
 	c.Bind(&tmp)
+	user := Model.GetUserById(tmp.UserId)
 	leave := Model.GetLeaveByLeaveId(tmp.LeaveId)
-	leave.ChangeAdministratorStatus(tmp.Result, tmp.UserId)
+	if user.IsAdministrators() {
+		leave.ChangeAdministratorStatus(tmp.Result, tmp.UserId)
+	} else if user.IsTeacher() {
+		leave.ChangeTeacherStatus(tmp.Result)
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "fail",
+			"msg":    "审核失败",
+		})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"status": "ok",
 		"msg":    "审核成功",
@@ -1019,7 +1030,9 @@ func (controller *Controller) ExamLeaveByTeacher(c *gin.Context) {
 		Result  string `json:"out"`
 	}
 	c.Bind(&tmp)
+	fmt.Println(tmp)
 	leave := Model.GetLeaveByLeaveId(tmp.LeaveId)
+	fmt.Println(leave)
 	leave.ChangeTeacherStatus(tmp.Result)
 	c.JSON(http.StatusOK, gin.H{
 		"status": "ok",

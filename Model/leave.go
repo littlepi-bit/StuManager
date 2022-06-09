@@ -1,6 +1,7 @@
 package Model
 
 import (
+	"fmt"
 	"hash/crc32"
 	"strconv"
 	"time"
@@ -59,12 +60,15 @@ func (leave *LeaveList) ChangeAdministratorStatus(status string, ReviewerID stri
 func (leave *LeaveList) ChangeTeacherStatus(status string) {
 	if status == "pass" {
 		leave.TeacherOpinion = "true"
+		fmt.Println("审核通过")
+		result := GlobalConn.Model(&LeaveList{}).Where(&LeaveList{LeaveID: leave.LeaveID}).Update("teacher_opinion", leave.TeacherOpinion)
+		fmt.Println(result.Error)
 	} else if status == "refuse" {
 		leave.TeacherOpinion = "false"
 	} else {
 		return
 	}
-	GlobalConn.Model(&LeaveList{}).Where(&LeaveList{LeaveID: leave.LeaveID}).Update("teacher_opinion", leave.TeacherOpinion)
+
 }
 
 func GetLeaveByUserId(UId string) []LeaveList {
