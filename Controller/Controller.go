@@ -361,7 +361,7 @@ func (controller *Controller) SelectCourse(c *gin.Context) {
 		})
 		return
 	}
-	rows, _ := Model.GlobalConn.Model(&Model.Course{}).Select("courses.course_time").Joins("join selections on selections.course_id=courses.course_id").Rows()
+	rows, _ := Model.GlobalConn.Model(&Model.Course{}).Select("courses.course_time").Joins("join selections on selections.course_id=courses.course_id and stu_id = ?", tmp.UserId).Rows()
 	var Result struct {
 		CourseTime string
 	}
