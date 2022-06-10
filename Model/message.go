@@ -1,7 +1,6 @@
 package Model
 
 import (
-	"fmt"
 	"hash/crc32"
 	"strconv"
 	"time"
@@ -21,6 +20,7 @@ type Message struct {
 
 type SendedMsg struct {
 	ToId        string `json:"toId"`
+	ToName      string `json:"toName"`
 	SendTime    string `json:"sendTime"`
 	SendMessage string `json:"sendMessage"`
 	MessageId   string `json:"messageId"`
@@ -31,6 +31,7 @@ type SendedMsg struct {
 
 type RecvMsg struct {
 	FromId      string `json:"fromId"`
+	FromName    string `json:"fromName"`
 	SendTime    string `json:"sendTime"`
 	SendMessage string `json:"sendMessage"`
 	MessageId   string `json:"messageId"`
@@ -75,7 +76,9 @@ func (m *Message) CopySended() SendedMsg {
 	Sended.Key = m.MegID
 	Sended.SendMessage = m.Content
 	Sended.Title = m.Title
+	user := GetUserById(m.NotifiedID)
 	Sended.ToId = m.NotifiedID
+	Sended.ToName = user.Name
 	Sended.SendTime = m.SendTime
 	Sended.HasRead = m.Read
 	return Sended
@@ -89,7 +92,8 @@ func (m *Message) CopyRecv() RecvMsg {
 	Recv.SendMessage = m.Content
 	Recv.SendTime = m.SendTime
 	user := GetUserById(m.NotifierID)
-	Recv.FromId = fmt.Sprintf("%s(%s)", user.Name, m.NotifierID)
+	Recv.FromId = m.NotifierID
+	Recv.FromName = user.Name
 	Recv.HasRead = m.Read
 	return Recv
 }
