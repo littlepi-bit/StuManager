@@ -26,6 +26,7 @@ type SendedMsg struct {
 	MessageId   string `json:"messageId"`
 	Title       string `json:"title"`
 	Key         string `json:"key"`
+	HasRead     bool   `json:"hasRead"`
 }
 
 type RecvMsg struct {
@@ -76,6 +77,7 @@ func (m *Message) CopySended() SendedMsg {
 	Sended.Title = m.Title
 	Sended.ToId = m.NotifiedID
 	Sended.SendTime = m.SendTime
+	Sended.HasRead = m.Read
 	return Sended
 }
 
