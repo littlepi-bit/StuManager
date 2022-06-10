@@ -71,17 +71,11 @@ func (user *User) IsTeacher() bool {
 }
 
 func (user *User) IsStudent() bool {
-	if user.Identity == "student" {
-		return true
-	}
-	return false
+	return user.Identity == "student"
 }
 
 func (user *User) IsAdministrators() bool {
-	if user.Identity == "administrators" {
-		return true
-	}
-	return false
+	return user.Identity == "administrators"
 }
 
 func GetUserById(UId string) *User {
