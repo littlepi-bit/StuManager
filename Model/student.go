@@ -73,9 +73,11 @@ func (student *Student) GetStudentCourse() []WeekTable {
 	for _, selection := range selections {
 		class := GetCourseById(selection.CourseID)
 		var weekTable WeekTable
-		weekTable.Week = timeMapping1[class.CourseTime[:2]]
-		weekTable.Begin = timeMapping2[class.CourseTime[2:]][0]
-		weekTable.End = timeMapping2[class.CourseTime[2:]][1]
+		t := []rune(class.CourseTime)
+		fmt.Println(string(t[:2]))
+		weekTable.Week = timeMapping1[string(t[:2])]
+		weekTable.Begin = timeMapping2[string(t[2:])][0]
+		weekTable.End = timeMapping2[string(t[2:])][1]
 		weekTable.CourseId = class.CourseId
 		weekTable.CourseName = class.CourseName
 		teacher := GetTeacherById(class.TeacherID)
