@@ -67,7 +67,10 @@ func GetCourseCount() int64 {
 
 func GetCourseById(CId string) *Course {
 	var course Course
-	GlobalConn.Where(&Course{CourseId: CId}).Find(&course)
+	result := GlobalConn.Where(&Course{CourseId: CId}).Find(&course)
+	if result.Error != nil || result.RowsAffected == 0 {
+		return nil
+	}
 	return &course
 }
 
@@ -139,6 +142,9 @@ func (c *Course) AddCourse() {
 }
 
 func (c *Course) DeleteCourse() {
+	if course := GetCourseById(c.CourseId); course == nil {
+		return
+	}
 	GlobalConn.Where(&Course{CourseId: c.CourseId}).Delete(&c)
 }
 
@@ -179,7 +185,7 @@ var GlobalCourse []Course = []Course{
 	{
 		CourseId:   "1",
 		CourseName: "离散数学",
-		CourseTime: "周四第二讲",
+		CourseTime: "周四第1讲",
 		Credit:     2,
 		Capacity:   100,
 		TeacherID:  "12",
@@ -190,7 +196,7 @@ var GlobalCourse []Course = []Course{
 	{
 		CourseId:   "2",
 		CourseName: "软件设计实现",
-		CourseTime: "周五第二讲",
+		CourseTime: "周五第2讲",
 		Credit:     4,
 		Capacity:   80,
 		TeacherID:  "22",
@@ -201,8 +207,8 @@ var GlobalCourse []Course = []Course{
 	{
 		CourseId:   "3",
 		CourseName: "计算机图形学",
-		CourseTime: "周一第四讲",
-		Credit:     5,
+		CourseTime: "周一第4讲",
+		Credit:     3,
 		Capacity:   94,
 		TeacherID:  "32",
 		College:    "SCAI",
@@ -212,8 +218,8 @@ var GlobalCourse []Course = []Course{
 	{
 		CourseId:    "4",
 		CourseName:  "数据结构",
-		CourseTime:  "周三第四讲",
-		Credit:      4,
+		CourseTime:  "周三第4讲",
+		Credit:      3,
 		Capacity:    80,
 		NumberOfStu: 80,
 		TeacherID:   "12",
@@ -224,7 +230,7 @@ var GlobalCourse []Course = []Course{
 	{
 		CourseId:   "5",
 		CourseName: "动漫与游戏",
-		CourseTime: "周二第二讲",
+		CourseTime: "周二第2讲",
 		Credit:     3,
 		Capacity:   10,
 		TeacherID:  "42",
@@ -235,8 +241,8 @@ var GlobalCourse []Course = []Course{
 	{
 		CourseId:   "6",
 		CourseName: "毛泽东思想与中国特色社会主义理论体系概论",
-		CourseTime: "周四第二讲",
-		Credit:     2,
+		CourseTime: "周四第2讲",
+		Credit:     3,
 		Capacity:   110,
 		TeacherID:  "2",
 		College:    "MARX",

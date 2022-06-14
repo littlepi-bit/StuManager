@@ -22,7 +22,7 @@ func NewStudent() *Student {
 func GetStudentByID(SId string) *Student {
 	var s Student
 	result := GlobalConn.Where(&Student{StuID: SId}).First(&s)
-	if result.Error != nil || result.RowsAffected == 0 {
+	if result.Error != nil {
 		return nil
 	}
 	return &s

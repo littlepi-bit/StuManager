@@ -306,21 +306,41 @@ func (controller *Controller) SignIn(c *gin.Context) {
 	} else if myUser.Identity == "administrators" {
 		admin := Model.GetAdministratorById(myUser.Id)
 		if admin == nil {
-			fmt.Println("该教师不存在！")
+			fmt.Println("该管理员不存在！")
 			c.JSON(http.StatusOK, gin.H{
 				"token":  "",
-				"msg":    "该教师不存在",
+				"msg":    "该管理员不存在",
 				"status": "fail",
 			})
 			return
 		}
 	}
 	myUser.AddUser()
+	token := Model.GenerateToken(&Model.JWTClaims{
+		UserID:   user.Id,
+		Username: user.Name,
+		Password: user.Password})
+	Model.SetHash(
+		token,
+		Model.JsontoString(gin.H{
+			"userId":     user.Id,
+			"userName":   user.Name,
+			"password":   user.Password,
+			"peopleType": user.Identity,
+		}),
+		time.Minute*5)
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "token", //你的cookie的名字
+		Value:    token,   //cookie值
+		Path:     "/",
+		Domain:   "",
+		MaxAge:   604800,
+		Secure:   false,
+		HttpOnly: false,
+		// SameSite: 4, //下面是详细解释
+	})
 	c.JSON(http.StatusOK, gin.H{
-		"token": Model.GenerateToken(&Model.JWTClaims{
-			UserID:   user.Id,
-			Username: user.Name,
-			Password: user.Password}),
+		"token":  token,
 		"msg":    "注册成功",
 		"status": "ok",
 	})
@@ -1038,7 +1058,12 @@ func (controller *Controller) ViewStuLeaveByTeacher(c *gin.Context) {
 		if viewLeave.TeacherName != t.TeacherName {
 			continue
 		}
+		user := Model.GetUserById(leave.ApplicantID)
+		if !user.IsStudent() {
+			continue
+		}
 		fmt.Println(viewLeave.TeacherName)
+		viewLeave.TeacherOpinion = "pass"
 		viewLeaves = append(viewLeaves, viewLeave)
 	}
 	c.JSON(http.StatusOK, viewLeaves)

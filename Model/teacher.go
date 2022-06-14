@@ -20,7 +20,7 @@ func NewTeacher() *Teacher {
 func GetTeacherById(TId string) *Teacher {
 	var t Teacher
 	result := GlobalConn.Where(&Teacher{TeacherID: TId}).First(&t)
-	if result.Error != nil || result.RowsAffected == 0 {
+	if result.Error != nil {
 		return nil
 	}
 	return &t
@@ -29,7 +29,7 @@ func GetTeacherById(TId string) *Teacher {
 func GetTeacherByName(TName string) *Teacher {
 	var t Teacher
 	result := GlobalConn.Model(&Teacher{}).Where("teacher_name=?", TName).First(&t)
-	if result.Error != nil || result.RowsAffected == 0 {
+	if result.Error != nil {
 		fmt.Println(result.Error)
 		return nil
 	}
@@ -57,7 +57,7 @@ func (teacher *Teacher) AddTeacher() error {
 func GetAllTeachers() []Teacher {
 	var ters = make([]Teacher, 0)
 	result := GlobalConn.Model(&Teacher{}).Find(&ters)
-	if result.Error != nil || result.RowsAffected == 0 {
+	if result.Error != nil{
 		return nil
 	}
 	return ters

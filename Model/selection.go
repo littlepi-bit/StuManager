@@ -30,7 +30,9 @@ func (s *Selection) AddSelection() {
 //撤销选课单
 func (s *Selection) RevokeSelection() {
 	var selection Selection
+	course := GetCourseById(s.CourseID)
 	GlobalConn.Where(&Selection{StuID: s.StuID, CourseID: s.CourseID}).First(&selection)
+	course.SubStuNum()
 	GlobalConn.Delete(&selection)
 }
 

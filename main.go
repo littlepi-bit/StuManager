@@ -10,6 +10,7 @@ func main() {
 	Model.OpenDatabase(true)
 	defer Model.CloseDatabase()
 	Model.InitRedis("120.77.12.35:6379")
+	//Model.TestAddCourse()
 	// Model.TestAddCollege()
 	// Model.TestAddCourse()
 	//Model.InitDatabase()
