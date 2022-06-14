@@ -87,6 +87,20 @@ func GetUserById(UId string) *User {
 	return &user
 }
 
+func UserToViewUser(users []User) []ViewUser {
+	viewUsers := make([]ViewUser, 0)
+	for _, user := range users {
+		var viewUser ViewUser
+		viewUser.UserId = user.Id
+		viewUser.Key = user.Id
+		viewUser.UserName = user.Name
+		viewUser.Identity = user.Identity
+		viewUser.HasSignIn = true
+		viewUsers = append(viewUsers, viewUser)
+	}
+	return viewUsers
+}
+
 func GetAllUser() []User {
 	var users []User
 	result := GlobalConn.Find(&users)

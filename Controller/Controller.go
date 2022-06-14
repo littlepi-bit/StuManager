@@ -961,7 +961,8 @@ func (controller *Controller) GetTeachers(c *gin.Context) {
 //获取所有注册用户
 func (controller *Controller) ViewAlreadyRegisteredUsers(c *gin.Context) {
 	users := Model.GetAllUser()
-	c.JSON(http.StatusOK, users)
+	viewUsers := Model.UserToViewUser(users)
+	c.JSON(http.StatusOK, viewUsers)
 }
 
 //教师
