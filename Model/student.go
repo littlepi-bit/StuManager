@@ -45,9 +45,6 @@ func StudentsToViewUser(students []Student) []ViewUser {
 		SignInUsers[user.Id] = true
 	}
 	for _, student := range students {
-		if !SignInUsers[student.StuID] {
-			continue
-		}
 		viewUsers = append(viewUsers, ViewUser{
 			Key:       student.StuID,
 			UserId:    student.StuID,

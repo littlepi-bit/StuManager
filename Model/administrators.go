@@ -37,9 +37,6 @@ func AdministratorsToViewUser(admins []Administrator) []ViewUser {
 		SignInUsers[user.Id] = true
 	}
 	for _, admin := range admins {
-		if !SignInUsers[admin.AdminId] {
-			continue
-		}
 		viewUsers = append(viewUsers, ViewUser{
 			Key:       admin.AdminId,
 			UserId:    admin.AdminId,
