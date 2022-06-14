@@ -41,6 +41,12 @@ func GetSelectionsByCourseId(CId string) (selections []Selection) {
 	return selections
 }
 
+//查看某一学生的选课情况
+func GetSelectionsByStuId(SId string) (selections []Selection) {
+	GlobalConn.Model(&Selection{}).Where("stu_id=?", SId).Find(&selections)
+	return selections
+}
+
 func GetSelectionsByCourseIdAndStuId(StuId, CorId string) *Selection {
 	var s Selection
 	result := GlobalConn.Where("stu_id = ? AND course_id = ?", StuId, CorId).First(&s)

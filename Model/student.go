@@ -67,6 +67,25 @@ func (student *Student) AddStudent() error {
 	return nil
 }
 
+func (student *Student) GetStudentCourse() []WeekTable {
+	var weekTables = []WeekTable{}
+	selections := GetSelectionsByStuId(student.StuID)
+	for _, selection := range selections {
+		class := GetCourseById(selection.CourseID)
+		var weekTable WeekTable
+		weekTable.Week = timeMapping1[class.CourseTime[:2]]
+		weekTable.Begin = timeMapping2[class.CourseTime[2:]][0]
+		weekTable.End = timeMapping2[class.CourseTime[2:]][1]
+		weekTable.CourseId = class.CourseId
+		weekTable.CourseName = class.CourseName
+		teacher := GetTeacherById(class.TeacherID)
+		weekTable.Teacher = teacher.TeacherName
+		weekTable.Address = class.Address
+		weekTables = append(weekTables, weekTable)
+	}
+	return weekTables
+}
+
 var GlobalStudent = []Student{
 	{
 		StuID:     "2019110502",
@@ -94,6 +113,39 @@ var GlobalStudent = []Student{
 		College:   "计算机与人工智能学院",
 		Major:     "计算机科学与技术",
 		Class:     "计科1班",
+	},
+}
+
+var timeMapping1 = map[string]int{
+	"周一": 1,
+	"周二": 2,
+	"周三": 3,
+	"周四": 4,
+	"周五": 5,
+	"周六": 6,
+	"周日": 7,
+}
+
+var timeMapping2 = map[string][]int{
+	"第一讲": {
+		1,
+		2,
+	},
+	"第二讲": {
+		3,
+		5,
+	},
+	"第三讲": {
+		6,
+		7,
+	},
+	"第四讲": {
+		8,
+		10,
+	},
+	"第五讲": {
+		11,
+		13,
 	},
 }
 

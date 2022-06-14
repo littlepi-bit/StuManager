@@ -36,6 +36,17 @@ type Timetable struct {
 	HasSelected bool   `json:"hasSelected"`
 }
 
+type WeekTable struct {
+	Key        string `json:"key"`
+	Week       int    `json:"week"`
+	Begin      int    `json:"begin"`
+	End        int    `json:"end"`
+	CourseId   string `json:"courseId"`
+	CourseName string `json:"courseName"`
+	Teacher    string `json:"teacher"`
+	Address    string `json:"place"`
+}
+
 var mu sync.Mutex
 
 func GetCourse(num int) (courses []Course) {

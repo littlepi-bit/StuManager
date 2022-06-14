@@ -418,6 +418,23 @@ func (controller *Controller) ViewSelectedCourse(c *gin.Context) {
 	c.JSON(http.StatusOK, timetable)
 }
 
+//按周查看已选课程
+func (controller *Controller) ViewSelectedCoursesByWeek(c *gin.Context) {
+	var user Model.User
+	c.Bind(&user)
+	student := Model.GetStudentByID(user.Id)
+	if student == nil {
+		fmt.Println("学生不存在")
+		c.JSON(http.StatusForbidden, gin.H{
+			"status": "fail",
+			"msg":    "学生不存在",
+		})
+		return
+	}
+	weekTables := student.GetStudentCourse()
+	c.JSON(http.StatusOK, weekTables)
+}
+
 //删除已选课程
 func (controller *Controller) DeleteSelectedCourse(c *gin.Context) {
 	var tmp struct {

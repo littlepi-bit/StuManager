@@ -48,6 +48,7 @@ func SetUpRouter() *gin.Engine {
 	router.POST("/viewInitialCourse", controller.ViewInitialCourse)
 	router.POST("/viewMyLeave", controller.ViewMyLeave)
 	router.POST("/viewSelectedCourse", controller.ViewSelectedCourse)
+	router.POST("/viewSelectedCoursesByWeek", controller.ViewSelectedCoursesByWeek)
 	router.POST("/viewStuLeave", controller.ViewStuLeave)
 	router.POST("/viewStuLeaveByTeacher", controller.ViewStuLeaveByTeacher)
 	router.POST("/viewUser", controller.ViewAllUser)
