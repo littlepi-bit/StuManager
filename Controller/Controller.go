@@ -793,6 +793,10 @@ func (controller *Controller) DeleteCourse(c *gin.Context) {
 	}
 	course := Model.GetCourseById(tmp.CourseId)
 	course.DeleteCourse()
+	selections := Model.GetSelectionsByCourseId(course.CourseId)
+	for _, s := range selections {
+		s.RevokeSelection()
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"status": "ok",
 		"msg":    "删除成功",
